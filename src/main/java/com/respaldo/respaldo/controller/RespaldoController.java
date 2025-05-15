@@ -3,35 +3,30 @@ package com.respaldo.respaldo.controller;
 import com.respaldo.respaldo.model.Respaldo;
 import com.respaldo.respaldo.service.RespaldoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/respaldos")
 public class RespaldoController {
 
-    private final RespaldoService respaldoService;
-
     @Autowired
-    public RespaldoController(RespaldoService respaldoService) {
-        this.respaldoService = respaldoService;
-    }
+    private RespaldoService respaldoService;
 
     @GetMapping
-    public ResponseEntity<List<Respaldo>> getAllRespaldos() {
-        return ResponseEntity.ok(respaldoService.getAllRespaldo());
+    public ResponseEntity<List<Respaldo>> obtenerTodosLosRespaldos() {
+        return new ResponseEntity<>(respaldoService.getAllRespaldo(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Respaldo> getRespaldoById(@PathVariable Integer id) {
+    public ResponseEntity<Respaldo> obtenerRespaldoPorId(@PathVariable Integer id) {
         Optional<Respaldo> respaldo = respaldoService.getRespaldoById(id);
-        return respaldo.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return respaldo.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping
@@ -40,17 +35,20 @@ public class RespaldoController {
         return new ResponseEntity<>(nuevoRespaldo, HttpStatus.CREATED);
     }
 
-    @PostMapping("/restaurar/{id}")
-    public ResponseEntity<Void> restaurarRespaldo(
-            @PathVariable Integer id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaHoraVersion) {
-        respaldoService.restaurarVersion(id, fechaHoraVersion);
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarRespaldo(@PathVariable Integer id) {
+        respaldoService.eliminarRespaldo(id);
+        Map<String, String> response = Map.of("message", "Respaldo eliminado");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarRespaldo(@PathVariable Integer id) {
-        respaldoService.eliminarRespaldo(id);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/{id}") // Añade este método
+    public ResponseEntity<Respaldo> actualizarRespaldo(@PathVariable Integer id, @RequestBody Respaldo respaldoActualizado) {
+        Respaldo respaldo = respaldoService.actualizarRespaldo(id, respaldoActualizado);
+        if (respaldo != null) {
+            return new ResponseEntity<>(respaldo, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
