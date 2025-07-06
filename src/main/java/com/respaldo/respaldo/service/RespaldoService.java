@@ -54,9 +54,6 @@ public class RespaldoService {
     }
 
     private String obtenerRutaVersion(String rutaBase, LocalDateTime fechaHoraVersion) {
-        // Esta es una función de ejemplo. La lógica real dependerá
-        // de cómo nombres tus archivos de respaldo con versiones de tiempo.
-        // Podrías necesitar un formato específico o metadatos.
         return rutaBase + "_" + fechaHoraVersion.toString().replace(":", "-").replace(".", "-") + ".bak";
     }
 
@@ -68,7 +65,6 @@ public class RespaldoService {
         Optional<Respaldo> respaldoOptional = respaldoRepository.findById(id);
         if (respaldoOptional.isPresent()) {
             Respaldo respaldoExistente = respaldoOptional.get();
-            // Actualiza los campos que quieras permitir modificar
             if (respaldoActualizado.getRutaArchivo() != null) {
                 respaldoExistente.setRutaArchivo(respaldoActualizado.getRutaArchivo());
             }
@@ -78,7 +74,6 @@ public class RespaldoService {
             if (respaldoActualizado.getSistema() != null){
                 respaldoExistente.setSistema(respaldoActualizado.getSistema());
             }
-            // Guarda los cambios
             return respaldoRepository.save(respaldoExistente);
         } else {
             return null;
